@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>文章列表</title>
+    <link rel="stylesheet" href="./libs/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/iconfont.css">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="./libs/jquery-1.12.4.min.js"></script>
+    <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
+    <!-- 引入模板引擎js文件 -->
+    <script src="./libs/template-web.js"></script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="common_title">
+            文章类别管理
+        </div>
+        <div class="container-fluid common_con">
+            <table class="table table-striped table-bordered table-hover mp20 category_table">
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>Slug</th>
+                        <th class="text-center" width="100">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>奇趣事</td>
+                        <td>funny</td>
+                        <td class="text-center">
+                            <a href="javascript:void(0);" data-toggle="modal" class=" btn btn-info btn-xs">编辑</a>
+                            <a href="javascript:void(0);" class="btn btn-danger btn-xs">删除</a>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-center">
+                            <a href="javascript:void(0)" class="btn btn-success" id="xinzengfenlei" data-toggle="modal"
+                                data-target="#myModal">新增分类</a>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- 模态框 -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="exampleModalLabel">新增分类</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="recipient-name" class="control-label">分类名称</label>
+                                <input type="text" class="form-control" id="recipient-name">
+                            </div>
+                            <div class="form-group">
+                                <label for="message-text" class="control-label">分类类别</label>
+                                <input class="form-control" id="message-text"></input>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default cancel" data-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary confirm">确认</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="./libs/http.js"></script>
+    <script src="./libs/template-web.js"></script>
+    <script id="categoryList" type="text/html">
+        {{each data}}
+        <tr>
+            <td>{{$value.name}}</td>
+            <td>{{$value.slug}}</td>
+            <td class="text-center">
+                <a href="javascript:void(0);" data-toggle="modal" data-id="{{$value.id}}" data-target="#myModal"
+                    class=" btn btn-info btn-xs">编辑</a>
+                <a href="javascript:void(0);" data-id="{{$value.id}}" class="btn btn-danger btn-xs">删除</a>
+            </td>
+        </tr>
+        {{/each}}
+    </script>
+    <script>
+        $(function () {
+            //获取所有分类文章
+            $.ajax({
+                url: BigNew.category_list,
+                success: function (res) {
+                    console.log(res);
+                    if (res.code == 200) {
+                        var category_list = template('categoryList', res);
+                        $('tbody').html(category_list);
+                    }
+                }
+            })
+            //点击新增弹出模态框
+            //模态框弹出之前的事件
+            $('#myModal').on('show.bs.modal', function (event) {
+                var target = event.relatedTarget;
+                console.log(target);
+                if (target == $('#xinzengfenlei')[0]) {
+                    // alert('点击的新增');
+                    $('#myModal .confirm').text('新增');
+                } else {
+                    $('#myModal .confirm').text('编辑');
+                    console.log($(target).parents('td').prev().prev().text());
+                    console.log($(target).parents('td').prev().text());
+                    $('#recipient-name').val($(target).parents('td').prev().prev().text());
+                    $('#message-text').val($(target).parents('td').prev().text());
+                }
+            })
+            //新增
+            $('#myModal .confirm').on('click', function () {
+                if ($(this).text() == '新增') {
+                    // alert('新增')
+                    var category_name = $('#recipient-name').val().trim();
+                    var category_leibie = $('#message-text').val().trim();
+                    // console.log(category_name+"   "+category_leibie);
+                    if (category_name == '' || category_leibie == '') {
+                        alert('分类名称或者分类类别为空');
+                    } else {
+                        $.ajax({
+                            type: 'post',
+                            url: BigNew.category_add,
+                            data: {
+                                name: category_name,
+                                slug: category_leibie
+                            },
+                            success: function (res) {
+                                console.log(res);
+                                if (res.code == 201) {
+                                    $('#myModal').hide();
+                                    window.location.reload();
+                                } else {
+                                    alert(res)
+                                }
+                            }
+                        })
+                    }
+                } else {
+
+                    $.ajax({
+                        type: 'post',
+
+                    })
+                }
+            })
+        })
+    </script>
+
+</html>
