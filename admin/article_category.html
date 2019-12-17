@@ -122,6 +122,9 @@
                     console.log($(target).parents('td').prev().text());
                     $('#recipient-name').val($(target).parents('td').prev().prev().text());
                     $('#message-text').val($(target).parents('td').prev().text());
+
+                    //给确认按钮设置id
+                    $('#myModal .confirm').attr('id',$(target).attr('data-id'));
                 }
             })
             //新增
@@ -153,10 +156,27 @@
                         })
                     }
                 } else {
+                    //编辑
 
                     $.ajax({
                         type: 'post',
-
+                        url:BigNew.category_edit,
+                        data:{
+                            id: $(this).attr('id'),
+                            name:$('#recipient-name').val(),
+                            slug:$('#message-text').val()
+                        },
+                        success:function(res){
+                            console.log(res);
+                            if(res.code == 200){
+                                $('#myModal').hide();
+                                window.location.reload();
+                            }else {
+                                $('#myModal').hide();
+                                alert(res);
+                               
+                            }
+                        }
                     })
                 }
             })
