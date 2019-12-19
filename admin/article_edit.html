@@ -68,5 +68,22 @@
         </div>
     </div>
 </body>
-
+<script src="./libs/http.js"></script>
+    <script>
+        $(function(){
+            //发送请求获取数据
+            var id = window.location.search.split('=')[1];
+            console.log(id);
+            $.ajax({
+                type:'get',
+                url:BigNew.article_search,
+                data:{
+                    id:id
+                },
+                success:function(res){
+                    console.log(res);
+                }
+            })
+        })
+    </script>
 </html>

@@ -123,6 +123,7 @@
                 $('.level02>li>a').first()[0].click();
             }else{
                 $('.level02').slideUp();
+                $(this).siblings('.level01').find('b').removeClass('rotate0');
                 $('.level02 li').removeClass('active');
             }
         })

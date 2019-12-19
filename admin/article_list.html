@@ -13,6 +13,7 @@
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 引入模板引擎js文件 -->
     <script src="./libs/template-web.js"></script>
+    <script src="./libs/jquery.twbsPagination.js"></script>
 </head>
 
 <body>
@@ -27,7 +28,7 @@
                         <select id="selCategory" name="" class="form-control input-sm">
                             <option value="">所有分类</option>
                             <option>未分类</option>
-                            <option>奇趣事</option>
+                            <option>奇趣</option>
                             <option>会生活</option>
                             <option>爱旅行</option>
                         </select>
@@ -69,9 +70,150 @@
                 </tbody>
             </table>
             <div class="row text-center">
+                <ul id="pagination" class="pagination-sm"></ul>
             </div>
         </div>
     </div>
 </body>
+<script src="./libs/template-web.js"></script>
+<script src="./libs/http.js"></script>
+
+<script id="selCategoryTem" type="text/html">
+    <option value="">所有分类</option>
+    {{each data}}
+    <option value="{{$value.id}}" data-id="{{$value.id}}">{{$value.name}}</option>
+    {{/each}}
+</script>
+
+<script id='newsList' type="text/html">
+    {{each data.data}}
+    <tr>
+        <td>{{$value.title}}</td>
+        <td>{{$value.author}}</td>
+        <td>{{$value.category}}</td>
+        <td class="text-center">{{$value.date}}</td>
+        <td class="text-center">{{$value.state}}</td>
+        <td class="text-center">
+            <a href="article_edit.html?id={{$value.id}}" data-id="{{$value.id}}" class="btn btn-default btn-xs">编辑</a>
+            <a href="javascript:void(0);" data-id="{{$value.id}}" class="btn btn-danger btn-xs delete">删除</a>
+        </td>
+    </tr>
+    {{/each}}
+</script>
+<script>
+    $(function () {
+        //请求分类下拉菜单
+        $.ajax({
+            url: BigNew.category_list,
+            dataType: 'json',
+            success: function (res) {
+                console.log(res);
+                if (res.code == 200) {
+                    var selCategoryFd = template('selCategoryTem', res);
+                    $('#selCategory').html(selCategoryFd);
+
+                }
+
+            }
+        })
+
+        
+       
+       
+        //根据页数请求文章列表
+        function getArticleList(currentPage) {
+            $.ajax({
+                url: BigNew.article_query,
+                type: 'get',
+                dataType: 'json',
+                data: {
+                    page: currentPage,
+                    perpage: 10, //每页返回10条数据
+                    type: $('#selCategory').val(),
+                    state: $('#selStatus').val(),
+                },
+                success: function (res) {
+                    console.log(res);
+                    //2.3 模板引擎渲染页面
+                    $('.table>tbody').html(template('newsList', res));
+                    //加载分页组件
+                    
+                }
+            });
+        };
+
+        
+        $('#btnSearch').on('click', function (e) {
+            //阻止表单默认行为
+            e.preventDefault();
+
+            $.ajax({
+                url: BigNew.article_query,
+                type: 'get',
+                dataType: 'json',
+                data: {
+                    page: 1,
+                    perpage: 10, //每页返回10条数据
+                    type: $('#selCategory').val(),
+                    state: $('#selStatus').val(),
+                },
+                success: function (res) {
+                    console.log(res);
+                    //2.3 模板引擎渲染页面
+                    $('.table>tbody').html(template('newsList', res));
+                    //加载分页组件
+                    $('#pagination').twbsPagination('destroy');
+                    $('#pagination').twbsPagination({
+                        totalPages: res.data.totalPage,
+                        visiblePages: 6,
+                        first:'首页',
+                        last:'尾页',
+                        prev:'上一页',
+                        next:'下一页',
+                        onPageClick: function (event, page) {
+                            getArticleList(page);
+                        }
+                    });
+
+                }
+            });
+
+            
+
+           
+            
+        })
+        //进入页面默认渲染
+         $('#btnSearch').trigger('click');
+         //删除文章
+         $('.table>tbody').on('click','.delete',function(e){
+               e.preventDefault();
+                //console.log('delete');
+                if(confirm('是否确认删除')){
+                    $.ajax({
+                    type:'post',
+                    data:{
+                        id:$(this).attr('data-id')
+                    },
+                    url:BigNew.article_delete,
+                    success:function(res){
+                        if(res.code == 204){
+                            window.location.reload()
+                        }
+                        console.log(res);
+                    }
+                })
+
+                }else {
+                    return ;
+                }
+                
+               
+            })
+
+
+
+    })
+</script>
 
 </html>

@@ -68,7 +68,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="message-text" class="control-label">分类类别</label>
-                                <input class="form-control" id="message-text"></input>
+                                <input class="form-control" id="message-text">
                             </div>
                         </form>
                     </div>
@@ -90,7 +90,7 @@
             <td class="text-center">
                 <a href="javascript:void(0);" data-toggle="modal" data-id="{{$value.id}}" data-target="#myModal"
                     class=" btn btn-info btn-xs">编辑</a>
-                <a href="javascript:void(0);" data-id="{{$value.id}}" class="btn btn-danger btn-xs">删除</a>
+                <a href="javascript:void(0);" data-id="{{$value.id}}" class="btn btn-danger btn-xs delete" >删除</a>
             </td>
         </tr>
         {{/each}}
@@ -116,6 +116,7 @@
                 if (target == $('#xinzengfenlei')[0]) {
                     // alert('点击的新增');
                     $('#myModal .confirm').text('新增');
+                    $('.modal-body>form')[0].reset();
                 } else {
                     $('#myModal .confirm').text('编辑');
                     console.log($(target).parents('td').prev().prev().text());
@@ -127,8 +128,10 @@
                     $('#myModal .confirm').attr('id',$(target).attr('data-id'));
                 }
             })
-            //新增
+            
             $('#myModal .confirm').on('click', function () {
+
+                //新增
                 if ($(this).text() == '新增') {
                     // alert('新增')
                     var category_name = $('#recipient-name').val().trim();
@@ -172,14 +175,37 @@
                                 $('#myModal').hide();
                                 window.location.reload();
                             }else {
-                                $('#myModal').hide();
-                                alert(res);
+                                alert(res.msg);
+                                $('#myModal').modal('hide');
                                
                             }
                         }
                     })
                 }
             })
+            //点击取消按钮
+            $('#myModal .cancel').on('click',function(){
+                $('.modal-body>form')[0].reset();
+            })
+
+            //文章分类删除
+            $('.category_table>tbody').on('click','.delete',function(){
+                $.ajax({
+                    type:'post',
+                    url:BigNew.category_delete,
+                    data:{
+                        id:$(this).attr('data-id'),
+                    },
+                    success:function(res){
+                        console.log(res);
+                        if(res.code == 204){
+                            alert('删除成功');
+                           window.location.reload();
+                        }
+                    }
+                })
+            })
+
         })
     </script>
 
