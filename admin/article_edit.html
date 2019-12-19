@@ -69,21 +69,46 @@
     </div>
 </body>
 <script src="./libs/http.js"></script>
-    <script>
-        $(function(){
-            //发送请求获取数据
-            var id = window.location.search.split('=')[1];
-            console.log(id);
-            $.ajax({
-                type:'get',
-                url:BigNew.article_search,
-                data:{
-                    id:id
-                },
-                success:function(res){
-                    console.log(res);
+<script src="./libs/template-web.js"></script>
+<script id="categoryList" type="text/html">
+    {{each data}}
+        <option value="{{$value.id}}">{{$value.name}}</option>
+    {{/each}}
+</script>
+<script>
+    $(function () {
+        /*2.加载文章类别 */
+        $.ajax({
+            type: 'get',
+            url: BigNew.category_list,
+            success: function (backData) {
+                if (backData.code == 200) {
+                    //模板引擎渲染数据
+                    $('select.category').html(template('categoryList', backData));
                 }
-            })
+            }
+        });
+        //发送请求获取数据
+        var id = window.location.search.split('=')[1];
+        console.log(id);
+        $.ajax({
+            type: 'get',
+            url: BigNew.article_search,
+            data: {
+                id: id
+            },
+            success: function (res) {
+                console.log(res);
+                if (res.code == 200) {
+                    $('.btn-edit')
+                    $('#inputTitle').val(res.data.title);
+                    $('.article_cover').attr('src', res.data.cover);
+                    $('select.category').val(res.data.categoryId);
+                    
+                }
+            }
         })
-    </script>
+    })
+</script>
+
 </html>
